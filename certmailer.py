@@ -26,13 +26,17 @@ params_col_list = ["Item", "URLofparam"]
 allparams = pd.read_csv("params/params.csv", usecols=params_col_list)
 itemparam = allparams["Item"]
 urlparam = allparams["URLofparam"]
-print(urlparam)
+#print(urlparam,"###################\n###############")
 certtemplatelink = urlparam[0]
 fonttemplatelink = urlparam[1] 
-bodytemplatelink = urlparam[2]  
-#urllib.request.urlretrieve(
-#  'https://github.com/mohalmah/certs/blob/main/Cairo-SemiBold.ttf?raw=true',
-#   "params/font.ttf")
+bodytemplatelink = urlparam[2]
+textpos = float(urlparam[3])
+fontcolor = urlparam[4]
+fontSize = int(float(urlparam[5]))
+print("text position in certificate: ",textpos)   
+urllib.request.urlretrieve(
+  #'https://github.com/mohalmah/certs/blob/main/Cairo-SemiBold.ttf?raw=true',
+   fonttemplatelink,"font.ttf")
 urllib.request.urlretrieve(
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpWW0q9KHe0sMjcLW4Xi6kU9AhfVmrIUyhrHy-dgUrj1Fm0yLX1RCBIfJbCQVyvV6NwiXC90EyK9oN/pub?gid=0&single=true&output=csv',
    "params/list2.csv")
@@ -42,8 +46,8 @@ urllib.request.urlretrieve(
 urllib.request.urlretrieve(
   #'https://raw.githubusercontent.com/mohalmah/certs/main/body.html',
   bodytemplatelink,"params/body.html")
-FONT_FILE = ImageFont.truetype(r'Cairo-SemiBold.ttf', 90)
-FONT_COLOR = "#efdeaf"
+FONT_FILE = ImageFont.truetype(r'font.ttf', fontSize)
+FONT_COLOR = fontcolor
 #response = requests.get("https://github.com/mohalmah/certs/blob/main/certtemplate.png")
 #template = Image.open(BytesIO(response.content))
 #template = Image.open(r'https://github.com/mohalmah/certs/blob/main/certtemplate.png')
@@ -85,7 +89,7 @@ def make_certificates(name):
         name_width, name_height = draw.textsize(name, font=FONT_FILE)
 
         # Placing it in the center, then making some adjustments.
-        draw.text(((WIDTH - name_width) / 2, (HEIGHT - name_height) / 1.70 - 31), name, fill=FONT_COLOR, font=FONT_FILE)
+        draw.text(((WIDTH - name_width) / 2, (HEIGHT - name_height) / textpos - 31), name, fill=FONT_COLOR, font=FONT_FILE)
         #rgb = Image.new('RGB', image_source.size, (255, 255, 255))  # white background
         #rgb.paste(image_source, mask=image_source.split()[3])               # paste using alpha channel as mask
             
@@ -157,18 +161,21 @@ if __name__ == "__main__":
 
     #names = ['Tushar Nankani', "Full Name", 'Some Long Ass Name Might Not Work']
     col_list = ["Name", "Emailsofparticipant"]
-    names = pd.read_csv("params/list2.csv", usecols=col_list)
+    names = pd.read_csv("params/list2.csv", usecols=col_list,na_filter= False)
+    #names = names.fillna(0, inplace=True)
     namesofpart = names["Name"]
     reciveremail = names["Emailsofparticipant"]
+    #namesofpart= list(filter(None, namesofpart))
+    #reciveremail = list(filter(None, reciveremail))
     
     remove_dir_content()
     for name in namesofpart:
         make_certificates(name)
-    print(len(names), "certificates done.")
+    print("#############",len(names), " certificates done.\n#########")
 
     for partiemail, partiname in zip(reciveremail, namesofpart):
         send_cert_email(partiemail,partiname)
-    print(len(names), "emails sent")
+    print("#############",len(names), "  emails sent\n########")
     
     #for name in reciveremail:
        # for realname in namesofpart:
