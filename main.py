@@ -1,3 +1,37 @@
+import subprocess
+import uvicorn
+from asyncio import Semaphore
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+sem = Semaphore(value=1)
+
+class Token(BaseModel):
+    token: str
+
+@app.get("/run/{token}")
+async def run_script(token: str):
+    async with sem:
+        # Validate the token
+        if token != "sec":
+            return {"error": "Invalid token"}
+        
+        # Run the script and get the output
+        output = subprocess.run(["python", "improvedcertmailer1.py"], capture_output=True)
+        
+        # Return the output to the client
+        return {"output": output.stdout.decode()}
+    
+    # Reload the server after the script is done running
+    uvicorn.reload()
+
+
+
+
+"""
+
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi import Request
@@ -20,17 +54,24 @@ async def acquire_lock(request: Request, call_next):
     return response
 
 def run_program():
-    s2_out = s2_out = subprocess.check_output([sys.executable, "certmailer.py"])
+    s2_out = s2_out = subprocess.check_output([sys.executable, "improvedcertmailer1.py"])
     return s2_out
 
 @app.get("/{token}")
 def read_root(token: str):
     # Validate the token
-    if token != "sec":
+    if token != "kshfuqwh323E34thisispasswordtosend":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    return run_program()
+    #try:
+        # Run the script using subprocess
+    subprocess.run(["python", "improvedcertmailer1.py"])
+    #finally:
+        # Release the lock
+        #lock.release()
+    
+    return {"status": "success"}
 
-
+"""
 
 
 
