@@ -15,7 +15,7 @@ class Token(BaseModel):
 async def run_script(token: str):
     async with sem:
         # Validate the token
-        if token != "sec":
+        if token != "kshfuqwh323E34thisispasswordtosend":
             return {"error": "Invalid token"}
         
         # Run the script and get the output
