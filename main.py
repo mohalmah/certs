@@ -1,3 +1,57 @@
+import os
+import subprocess
+import itsdangerous
+
+from fastapi import FastAPI
+from fastapi import HTTPException
+from fastapi import Query
+from fastapi import Request
+from fastapi import Response
+from fastapi.responses import HTMLResponse
+from starlette.middleware.sessions import SessionMiddleware
+
+app = FastAPI()
+
+app.add_middleware(SessionMiddleware, secret_key="vfVtsDOq0OIW51B4rWv3")
+@app.middleware("http")
+async def some_middleware(request: Request, call_next):
+    response = await call_next(request)
+    session = request.cookies.get('session')
+    if session:
+        response.set_cookie(key='session', value=request.cookies.get('session'), httponly=True)
+    return response
+SECRET_TOKEN = "kshfuqwh323E34thisispasswordtosend"  # Replace with your own secret token
+
+@app.get("/run_script")
+def run_script(request: Request, response: Response, token: str = Query(None)):
+    # Check if the token is correct
+    if token != SECRET_TOKEN:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Check if the script is already running
+    if "script_running" in request.session:
+        raise HTTPException(status_code=400, detail="Script is already running")
+
+    # Set a flag in the session to indicate that the script is running
+    request.session["script_running"] = True
+
+    # Run the script and capture the output
+    result = subprocess.run(["python", "improvedcertmailer1.py"], capture_output=True)
+
+    # Remove the flag from the session to indicate that the script has finished running
+    del request.session["script_running"]
+
+    # Return the output of the script as an HTML response
+    return HTMLResponse(result.stdout)
+
+
+
+
+
+
+
+"""
+
 import subprocess
 import uvicorn
 from asyncio import Semaphore
@@ -27,7 +81,7 @@ async def run_script(token: str):
     # Reload the server after the script is done running
     uvicorn.reload()
 
-
+"""
 
 
 """
